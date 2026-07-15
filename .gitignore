@@ -1,0 +1,29 @@
+# Python caching
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Model Checkpoints (avoid committing multi-GB weights)
+models/
+*.pt
+*.safetensors
+bpe_simple_vocab_16e6.txt.gz
+
+# Repositories installed in editable mode
+sam3/
+
+# Local Video Outputs and Inputs
+*.mp4
+*.jpg
+*.jpeg
+*.png
+output/
+tmp/
+runs/
+
+# IDE files
+.vscode/
+.idea/
+.gemini/
