@@ -2,6 +2,15 @@ import os
 import torch
 import numpy as np
 from sam3.model_builder import build_sam3_multiplex_video_predictor
+from sam3.model.sam3_multiplex_tracking import Sam3MultiplexTrackingWithInteractivity
+
+# Monkey patch Meta's internal Sam3MultiplexTrackingWithInteractivity.init_state 
+# to gracefully discard 'offload_state_to_cpu' which is not supported by this model class.
+_original_init_state = Sam3MultiplexTrackingWithInteractivity.init_state
+def _patched_init_state(self, *args, **kwargs):
+    kwargs.pop("offload_state_to_cpu", None)
+    return _original_init_state(self, *args, **kwargs)
+Sam3MultiplexTrackingWithInteractivity.init_state = _patched_init_state
 
 class SAM3Tracker:
     """
