@@ -57,8 +57,12 @@ class WanInpainter:
             
         # GPU memory optimizations for L40S (48GB VRAM)
         print("[WanInpainter] Enforcing memory optimizations (Model CPU Offload & VAE Slicing)...")
-        self.pipe.enable_model_cpu_offload()
-        self.pipe.enable_vae_slicing()
+        if hasattr(self.pipe, "enable_model_cpu_offload"):
+            self.pipe.enable_model_cpu_offload()
+        if hasattr(self.pipe, "enable_vae_slicing"):
+            self.pipe.enable_vae_slicing()
+        elif hasattr(self.pipe, "vae") and hasattr(self.pipe.vae, "enable_slicing"):
+            self.pipe.vae.enable_slicing()
         
     def generate_patch_sequence(self, video_patches, mask_patches, prompt, num_frames=16, height=480, width=480):
         """
