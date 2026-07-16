@@ -1,4 +1,5 @@
 import os
+os.environ["HF_HOME"] = "/workspace/.cache/huggingface"
 import gc
 import cv2
 import torch
