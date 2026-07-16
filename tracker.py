@@ -157,6 +157,9 @@ class SAM3Tracker:
         else:
             mask_np = np.array(mask_tensor)
             
+        if mask_np.size == 0 or mask_np.shape[0] == 0:
+            return None
+            
         # If float logits, threshold it
         if mask_np.dtype in [np.float32, np.float64]:
             mask_np = mask_np > 0.0
