@@ -100,7 +100,7 @@ def main():
         video_patches=vace_input_patches,
         mask_patches=crop_masks,
         prompt=diffusion_prompt,
-        num_frames=total_frames,
+        num_frames=min(16, total_frames),
         height=480,
         width=480
     )

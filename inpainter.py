@@ -92,6 +92,10 @@ class WanInpainter:
             else:
                 processed_masks.append(mask)
         
+        # Slice inputs to the target generation length
+        processed_video = processed_video[:num_frames]
+        processed_masks = processed_masks[:num_frames]
+        
         # Flush PyTorch cache to optimize VRAM before run
         torch.cuda.empty_cache()
         gc.collect()
