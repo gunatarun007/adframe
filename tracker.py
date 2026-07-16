@@ -31,12 +31,10 @@ class SAM3Tracker:
             
         print(f"[SAM3Tracker] Initializing predictor with checkpoint: {checkpoint_path} and BPE path: {bpe_path}...")
         
-        # Optimize for L40S VRAM (48GB): enable offloads and evaluation flags
+        # Initialize video predictor
         self.predictor = build_sam3_video_predictor(
             checkpoint_path=checkpoint_path,
             bpe_path=bpe_path,
-            offload_video_to_cpu=True,
-            offload_state_to_cpu=True,
         )
 
     def track_video(self, video_path, text_prompt):
