@@ -32,13 +32,14 @@ logging.basicConfig(
 )
 logger = logging.getLogger("milestone5")
 
+# Ensure sys.path knows about root imports for tracker/inpainter/adframe2
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from adframe2.experiment_package import ExperimentPackage
 from adframe2.system_info import collect_system_info, collect_model_registry_entry, current_vram_mb
 from adframe2.qwen_reasoner import QwenReasoner
 from adframe2.image_generator import ImageGenerator
 
-# Ensure sys.path knows about root imports for tracker/inpainter
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from tracker import SAM3Tracker
 from inpainter import WanInpainter
 
