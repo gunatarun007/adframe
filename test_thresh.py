@@ -16,7 +16,7 @@ for text_prompt in ["poster", "wall poster", "wall", "picture frame"]:
         _, outputs = tracker.predictor.add_prompt(
             session_id=session_id,
             frame_idx=0,
-            text_str=text_prompt,
+            text=text_prompt,
             output_prob_thresh=thresh
         )
         
