@@ -19,10 +19,10 @@ from PIL import Image
 import cv2
 import numpy as np
 
-# Enforce RunPod disk quota cache locations
-os.environ["HF_HOME"] = "/tmp/huggingface"
-os.environ["HF_HUB_CACHE"] = "/tmp/huggingface/hub"
-os.environ["TMPDIR"] = "/tmp"
+# Enforce RunPod disk quota cache locations using RAM disk (/dev/shm) since /tmp is full
+os.environ["HF_HOME"] = "/dev/shm/huggingface"
+os.environ["HF_HUB_CACHE"] = "/dev/shm/huggingface/hub"
+os.environ["TMPDIR"] = "/dev/shm"
 
 # Configure Logging
 logging.basicConfig(
