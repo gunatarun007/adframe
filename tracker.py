@@ -1,7 +1,7 @@
 import os
 import torch
 import numpy as np
-from sam3.model_builder import build_sam3_video_predictor
+from sam3.model_builder import build_sam3_multiplex_video_predictor
 
 class SAM3Tracker:
     """
@@ -31,8 +31,8 @@ class SAM3Tracker:
             
         print(f"[SAM3Tracker] Initializing predictor with checkpoint: {checkpoint_path} and BPE path: {bpe_path}...")
         
-        # Initialize video predictor
-        self.predictor = build_sam3_video_predictor(
+        # Initialize multiplex video predictor
+        self.predictor = build_sam3_multiplex_video_predictor(
             checkpoint_path=checkpoint_path,
             bpe_path=bpe_path,
         )
