@@ -1,5 +1,7 @@
 import os
 os.environ["HF_HOME"] = "/workspace/.cache/huggingface"
+os.environ["TMPDIR"] = "/workspace/tmp"
+os.makedirs("/workspace/tmp", exist_ok=True)
 import gc
 import cv2
 import torch
