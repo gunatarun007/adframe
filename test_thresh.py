@@ -13,12 +13,13 @@ for text_prompt in ["poster", "wall poster", "wall", "picture frame"]:
         session_id = session_response["session_id"]
         
         # We run add_prompt
-        _, outputs = tracker.predictor.add_prompt(
+        res = tracker.predictor.add_prompt(
             session_id=session_id,
             frame_idx=0,
             text=text_prompt,
             output_prob_thresh=thresh
         )
+        outputs = res["outputs"]
         
         num_objects = len(outputs.get("out_obj_ids", []))
         print(f"Prompt: '{text_prompt}', Thresh: {thresh}, Num Objects: {num_objects}")
