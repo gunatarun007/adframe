@@ -24,13 +24,11 @@ class WanInpainter:
         # Default datatype is bfloat16
         torch_dtype = torch.bfloat16
         
-        # Remove quantization_config because Diffusers pipeline expects PipelineQuantizationConfig, not transformers BitsAndBytesConfig
-        # We will rely on bfloat16 and model_cpu_offload to fit the 14B model into the 48GB L40S VRAM.
-        print(f"[WanInpainter] Loading with torch_dtype={torch_dtype} and variant='fp16' to save download space...")
+        # We will rely on bfloat16 to fit the model into VRAM.
+        print(f"[WanInpainter] Loading with torch_dtype={torch_dtype}...")
         self.pipe = WanVACEPipeline.from_pretrained(
             model_id,
-            torch_dtype=torch_dtype,
-            variant="fp16"
+            torch_dtype=torch_dtype
         )
             
         # Forced cast to torch.float32 for VAE submodule right after loading to avoid precision errors
