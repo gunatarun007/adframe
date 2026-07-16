@@ -16,14 +16,13 @@ categories = [
     "dog", "cat"
 ]
 
-print("Scanning all possible categories on frame 0...")
+print("Scanning all possible categories on frame 0 in a single session...")
+session_response = tracker.predictor.handle_request(
+    request=dict(type="start_session", resource_path=video_path)
+)
+session_id = session_response["session_id"]
+
 for text_prompt in categories:
-    session_response = tracker.predictor.handle_request(
-        request=dict(type="start_session", resource_path=video_path)
-    )
-    session_id = session_response["session_id"]
-    
-    # We run add_prompt
     res = tracker.predictor.add_prompt(
         session_id=session_id,
         frame_idx=0,
@@ -39,6 +38,6 @@ for text_prompt in categories:
         print(f"  Probs: {outputs['out_probs']}")
         print(f"  Boxes (xywh): {outputs['out_boxes_xywh']}")
         
-    tracker.predictor.handle_request(
-        request=dict(type="close_session", session_id=session_id)
-    )
+tracker.predictor.handle_request(
+    request=dict(type="close_session", session_id=session_id)
+)
