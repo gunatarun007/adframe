@@ -122,12 +122,38 @@ class WanInpainter:
         torch.cuda.empty_cache()
         gc.collect()
         
-        # Check output structure
+        # Decode output.frames which is a 5D tensor (batch, num_frames, C, H, W)
         frames = output.frames
-        if isinstance(frames, list) and len(frames) > 0 and isinstance(frames[0], list):
-            # Sometimes diffusers returns nested lists of frames [batch][frame]
-            frames = frames[0]
-            
-        print(f"[WanInpainter] Generation complete. Generated {len(frames)} frames.")
-        return frames
+        pil_frames = []
+
+        if hasattr(frames, "shape") and frames.ndim == 5:
+            # Tensor: (batch, num_frames, C, H, W) — extract batch 0
+            frames = frames[0]  # -> (num_frames, C, H, W)
+            for i in range(frames.shape[0]):
+                frame = frames[i]  # (C, H, W)
+                # Move to CPU, clamp, scale to [0,255]
+                frame_np = (frame.float().cpu().clamp(0, 1).permute(1, 2, 0).numpy() * 255).astype(np.uint8)
+                pil_frames.append(Image.fromarray(frame_np))
+        elif hasattr(frames, "shape") and frames.ndim == 4:
+            # Tensor: (num_frames, C, H, W) — batch already squeezed
+            for i in range(frames.shape[0]):
+                frame = frames[i]
+                frame_np = (frame.float().cpu().clamp(0, 1).permute(1, 2, 0).numpy() * 255).astype(np.uint8)
+                pil_frames.append(Image.fromarray(frame_np))
+        elif isinstance(frames, list):
+            if len(frames) > 0 and isinstance(frames[0], list):
+                frames = frames[0]  # nested [batch][frame]
+            for f in frames:
+                if isinstance(f, Image.Image):
+                    pil_frames.append(f)
+                elif hasattr(f, "shape"):
+                    frame_np = (f.float().cpu().clamp(0, 1).permute(1, 2, 0).numpy() * 255).astype(np.uint8)
+                    pil_frames.append(Image.fromarray(frame_np))
+                else:
+                    pil_frames.append(Image.fromarray(np.array(f)))
+        else:
+            pil_frames = list(frames)
+
+        print(f"[WanInpainter] Generation complete. Generated {len(pil_frames)} frames.")
+        return pil_frames
 
