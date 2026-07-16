@@ -16,9 +16,12 @@ class SAM3Tracker:
         if bpe_path is None:
             try:
                 import sam3
-                sam3_dir = os.path.dirname(sam3.__file__)
-                bpe_path = os.path.join(sam3_dir, "assets", "bpe_simple_vocab_16e6.txt.gz")
-            except ImportError:
+                if hasattr(sam3, "__file__") and sam3.__file__ is not None:
+                    sam3_dir = os.path.dirname(sam3.__file__)
+                    bpe_path = os.path.join(sam3_dir, "assets", "bpe_simple_vocab_16e6.txt.gz")
+                else:
+                    bpe_path = "./sam3/sam3/assets/bpe_simple_vocab_16e6.txt.gz"
+            except Exception:
                 bpe_path = "./sam3/sam3/assets/bpe_simple_vocab_16e6.txt.gz"
                 
         if not os.path.exists(checkpoint_path):
