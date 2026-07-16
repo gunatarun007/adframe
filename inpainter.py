@@ -14,7 +14,7 @@ class WanInpainter:
     Wrapper for quantized Wan 2.1 Video Inpainting/VACE pipeline.
     Optimized for NVIDIA L40S GPU (48GB VRAM) running in bfloat16/INT8.
     """
-    def __init__(self, model_id="Wan-AI/Wan2.1-VACE-14B-diffusers", load_in_8bit=False, device="cuda"):
+    def __init__(self, model_id="Wan-AI/Wan2.1-VACE-1.3B-diffusers", load_in_8bit=False, device="cuda"):
         self.device = device
         self.model_id = model_id
         self.load_in_8bit = load_in_8bit
