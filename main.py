@@ -10,9 +10,9 @@ from compositor import VPPCompositor
 
 def main():
     parser = argparse.ArgumentParser(description="Virtual Product Placement (VPP) SaaS Pipeline")
-    parser.add_argument("--video", type=str, default=r"C:\Users\tarun\Downloads\demo.mp4",
+    parser.add_argument("--video", type=str, default="/workspace/demo.mp4",
                         help="Path to full-res source video")
-    parser.add_argument("--brand", type=str, default=r"C:\Users\tarun\Downloads\demo_brand.jpg",
+    parser.add_argument("--brand", type=str, default="/workspace/demo_brand.jpg",
                         help="Path to brand asset image")
     parser.add_argument("--prompt", type=str, default="wall poster",
                         help="Text prompt for the surface to segment and track")
@@ -22,7 +22,7 @@ def main():
                         help="Path to SAM 3 checkpoint")
     parser.add_argument("--sam_bpe", type=str, default=None,
                         help="Path to SAM 3 BPE text tokenizer vocab file")
-    parser.add_argument("--wan_model", type=str, default="Wan-AI/Wan2.1-I2V-14B-480P-Diffusers",
+    parser.add_argument("--wan_model", type=str, default="Wan-AI/Wan2.1-VACE-14B-diffusers",
                         help="Wan 2.1 Model ID on Hugging Face")
     parser.add_argument("--load_in_8bit", action="store_true", default=False,
                         help="Enable 8-bit quantization for Wan 2.1 model")
@@ -81,9 +81,12 @@ def main():
     first_mask = crop_masks[0]
     composite_first_crop = compositor.blend_brand_asset_onto_crop(first_crop, first_mask, brand_img)
 
-    # Convert BGR composite to PIL RGB image for diffusion pipeline
-    composite_first_crop_rgb = cv2.cvtColor(composite_first_crop, cv2.COLOR_BGR2RGB)
-    composite_first_crop_pil = Image.fromarray(composite_first_crop_rgb)
+    # Construct the input video sequence for the VACE pipeline
+    # Frame 0 has the brand asset composite
+    vace_input_patches = [composite_first_crop]
+    # Subsequent frames have the original crop patches
+    for f_patch in crop_patches[1:]:
+        vace_input_patches.append(f_patch)
 
     # 5. Run Wan 2.1 Inpainting / Video Generation
     inpainter = WanInpainter(model_id=args.wan_model, load_in_8bit=args.load_in_8bit)
@@ -91,7 +94,8 @@ def main():
     # Generate the patch sequence starting from the brand-composited frame
     diffusion_prompt = f"a clean corporate branding asset perfectly embedded on a {args.prompt}, photorealistic, matching lights and shadows, ultra-detailed"
     generated_pil_patches = inpainter.generate_patch_sequence(
-        first_frame_image=composite_first_crop_pil,
+        video_patches=vace_input_patches,
+        mask_patches=crop_masks,
         prompt=diffusion_prompt,
         num_frames=total_frames,
         height=480,
