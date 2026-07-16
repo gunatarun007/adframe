@@ -24,32 +24,14 @@ class WanInpainter:
         # Default datatype is bfloat16
         torch_dtype = torch.bfloat16
         
-        if self.load_in_8bit:
-            try:
-                from transformers import BitsAndBytesConfig
-                quantization_config = BitsAndBytesConfig(
-                    load_in_8bit=True,
-                    llm_int8_threshold=6.0,
-                    llm_int8_skip_modules=["proj_out", "patch_embed"]
-                )
-                print("[WanInpainter] Initializing pipeline with 8-bit quantization to reduce memory footprint...")
-                self.pipe = WanVACEPipeline.from_pretrained(
-                    model_id,
-                    quantization_config=quantization_config,
-                    torch_dtype=torch_dtype,
-                    device_map="auto"
-                )
-            except Exception as e:
-                print(f"[WanInpainter] bitsandbytes/INT8 load failed: {e}. Falling back to standard bfloat16 loading.")
-                self.pipe = WanVACEPipeline.from_pretrained(
-                    model_id,
-                    torch_dtype=torch_dtype
-                )
-        else:
-            self.pipe = WanVACEPipeline.from_pretrained(
-                model_id,
-                torch_dtype=torch_dtype
-            )
+        # Remove quantization_config because Diffusers pipeline expects PipelineQuantizationConfig, not transformers BitsAndBytesConfig
+        # We will rely on bfloat16 and model_cpu_offload to fit the 14B model into the 48GB L40S VRAM.
+        print(f"[WanInpainter] Loading with torch_dtype={torch_dtype} and variant='fp16' to save download space...")
+        self.pipe = WanVACEPipeline.from_pretrained(
+            model_id,
+            torch_dtype=torch_dtype,
+            variant="fp16"
+        )
             
         # Forced cast to torch.float32 for VAE submodule right after loading to avoid precision errors
         print("[WanInpainter] Casting VAE submodule explicitly to float32...")
