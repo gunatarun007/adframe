@@ -25,7 +25,7 @@ def main():
                         help="Path to SAM 3 checkpoint")
     parser.add_argument("--sam_bpe", type=str, default=None,
                         help="Path to SAM 3 BPE text tokenizer vocab file")
-    parser.add_argument("--wan_model", type=str, default="Wan-AI/Wan2.1-VACE-14B-diffusers",
+    parser.add_argument("--wan_model", type=str, default="Wan-AI/Wan2.1-VACE-1.3B-diffusers",
                         help="Wan 2.1 Model ID on Hugging Face")
     parser.add_argument("--load_in_8bit", action="store_true", default=False,
                         help="Enable 8-bit quantization for Wan 2.1 model")
