@@ -212,7 +212,8 @@ class QwenReasoner:
         brand_img: Image.Image,
         video_fps: float = 25.0,
         num_sample_frames: int = 5,
-    ) -> dict:
+        return_raw: bool = False,
+    ):
         """
         Analyze sampled video frames + brand image.
         Returns structured reasoning JSON (see REASONING_SCHEMA).
@@ -282,7 +283,10 @@ class QwenReasoner:
         messages = [{"role": "user", "content": content}]
         raw = self._infer(messages)
         logger.debug(f"[QwenReasoner] Raw placement response:\n{raw[:800]}")
-        return _parse_json_from_response(raw)
+        result = _parse_json_from_response(raw)
+        if return_raw:
+            return result, raw
+        return result
 
     # ------------------------------------------------------------------
     # 2. Single-Frame Judge
@@ -293,7 +297,8 @@ class QwenReasoner:
         brand_img: Image.Image,
         reasoning: dict,
         score_threshold: float = 7.0,
-    ) -> dict:
+        return_raw: bool = False,
+    ):
         """
         Evaluate a single generated frame for realism.
         Returns structured judge JSON (see JUDGE_SCHEMA).
@@ -356,6 +361,8 @@ class QwenReasoner:
         # Ensure accept field is set based on score
         if "score" in result:
             result["accept"] = float(result["score"]) >= score_threshold
+        if return_raw:
+            return result, raw
         return result
 
     # ------------------------------------------------------------------
@@ -367,7 +374,8 @@ class QwenReasoner:
         brand_img: Image.Image,
         reasoning: dict,
         score_threshold: float = 7.0,
-    ) -> dict:
+        return_raw: bool = False,
+    ):
         """
         Evaluate keyframes from the generated video for temporal quality.
         Returns structured video judge JSON (see VIDEO_JUDGE_SCHEMA).
@@ -422,4 +430,6 @@ class QwenReasoner:
 
         if "overall_score" in result:
             result["accept"] = float(result["overall_score"]) >= score_threshold
+        if return_raw:
+            return result, raw
         return result
