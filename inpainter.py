@@ -122,35 +122,46 @@ class WanInpainter:
         torch.cuda.empty_cache()
         gc.collect()
         
-        # Decode output.frames which is a 5D tensor (batch, num_frames, C, H, W)
+        # Decode output.frames — can be 5D/4D torch.Tensor or np.ndarray (batch,frames,C,H,W)
         frames = output.frames
         pil_frames = []
 
-        if hasattr(frames, "shape") and frames.ndim == 5:
-            # Tensor: (batch, num_frames, C, H, W) — extract batch 0
-            frames = frames[0]  # -> (num_frames, C, H, W)
-            for i in range(frames.shape[0]):
-                frame = frames[i]  # (C, H, W)
-                # Move to CPU, clamp, scale to [0,255]
-                frame_np = (frame.float().cpu().clamp(0, 1).permute(1, 2, 0).numpy() * 255).astype(np.uint8)
-                pil_frames.append(Image.fromarray(frame_np))
-        elif hasattr(frames, "shape") and frames.ndim == 4:
-            # Tensor: (num_frames, C, H, W) — batch already squeezed
-            for i in range(frames.shape[0]):
-                frame = frames[i]
-                frame_np = (frame.float().cpu().clamp(0, 1).permute(1, 2, 0).numpy() * 255).astype(np.uint8)
-                pil_frames.append(Image.fromarray(frame_np))
+        def _frame_to_pil(f):
+            """Convert a single (C,H,W) tensor or numpy array to a PIL RGB image."""
+            import torch as _torch
+            if isinstance(f, _torch.Tensor):
+                arr = f.float().cpu().clamp(0, 1).permute(1, 2, 0).numpy()
+            elif isinstance(f, np.ndarray):
+                if f.ndim == 3 and f.shape[0] in (1, 3, 4):
+                    # (C,H,W) numpy — transpose to (H,W,C)
+                    arr = np.transpose(f, (1, 2, 0))
+                else:
+                    arr = f  # already (H,W,C)
+                arr = arr.astype(np.float32)
+                # if values outside [0,1], assume [0,255]
+                if arr.max() > 1.0:
+                    arr = arr / 255.0
+                arr = np.clip(arr, 0, 1)
+            else:
+                return Image.fromarray(np.array(f))
+            return Image.fromarray((arr * 255).astype(np.uint8))
+
+        if hasattr(frames, "ndim"):
+            if frames.ndim == 5:
+                frames = frames[0]  # (num_frames, C, H, W)
+            if frames.ndim == 4:
+                for i in range(frames.shape[0]):
+                    pil_frames.append(_frame_to_pil(frames[i]))
+            else:
+                pil_frames.append(_frame_to_pil(frames))
         elif isinstance(frames, list):
             if len(frames) > 0 and isinstance(frames[0], list):
                 frames = frames[0]  # nested [batch][frame]
             for f in frames:
                 if isinstance(f, Image.Image):
                     pil_frames.append(f)
-                elif hasattr(f, "shape"):
-                    frame_np = (f.float().cpu().clamp(0, 1).permute(1, 2, 0).numpy() * 255).astype(np.uint8)
-                    pil_frames.append(Image.fromarray(frame_np))
                 else:
-                    pil_frames.append(Image.fromarray(np.array(f)))
+                    pil_frames.append(_frame_to_pil(f))
         else:
             pil_frames = list(frames)
 
