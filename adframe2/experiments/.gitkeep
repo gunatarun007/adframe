@@ -1,0 +1,5 @@
+# AdFrame 2.0 — Experiments Directory
+# This directory contains all experiment runs. Never delete or overwrite subdirectories.
+# Each experiment_NNN/ is a complete, reproducible record of one pipeline run.
+
+.gitkeep
