@@ -216,9 +216,13 @@ def main():
             "sam3.1_multiplex.pt", "tracker", "float32", time.time()-t0, vram_before, current_vram_mb()
         ))
         
+        # Save a temp clip of the max_frames we loaded so SAM3 doesn't track 990 frames and OOM
+        clip_path = str(workspace_root / "clip.mp4")
+        save_video_from_pil([Image.fromarray(cv2.cvtColor(f, cv2.COLOR_BGR2RGB)) for f in video_frames_bgr], clip_path, fps=25)
+        
         surface_type = parsed_reasoning.get("surface_type", "surface")
         logger.info(f"Tracking surface: '{surface_type}' in video...")
-        masks_dict = sam_tracker.track_video(str(video_path), surface_type)
+        masks_dict = sam_tracker.track_video(clip_path, surface_type)
         
         mask_patches = []
         for i in range(total_frames):
