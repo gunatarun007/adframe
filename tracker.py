@@ -40,10 +40,11 @@ class SAM3Tracker:
             
         print(f"[SAM3Tracker] Initializing predictor with checkpoint: {checkpoint_path} and BPE path: {bpe_path}...")
         
-        # Initialize multiplex video predictor
+        # Initialize multiplex video predictor, disabling FlashAttention-3 to use PyTorch's native SDPA
         self.predictor = build_sam3_multiplex_video_predictor(
             checkpoint_path=checkpoint_path,
             bpe_path=bpe_path,
+            use_fa3=False,
         )
 
     def track_video(self, video_path, text_prompt):
